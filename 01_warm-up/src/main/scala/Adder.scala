@@ -24,11 +24,17 @@ class HalfAdder extends Module{
     /* 
      * TODO: Define IO ports of a half adder as presented in the lecture
      */
+         val a  = Input(UInt(1.W))
+         val b  = Input(UInt(1.W))
+         val c  = Output(UInt(1.W))  //carry
+         val s  = Output(UInt(1.W))  //sum
     })
 
   /* 
    * TODO: Describe output behaviour based on the input values
    */
+  io.c := io.a & io.b   //carry = a AND b
+  io.s := io.a ^ io.b   //sum = a XOR b
 
 }
 
@@ -49,18 +55,29 @@ class FullAdder extends Module{
     /* 
      * TODO: Define IO ports of a half adder as presented in the lecture
      */
+    val a  = Input(UInt(1.W))
+    val b  = Input(UInt(1.W))
+    val ci = Input(UInt(1.W))  //carry in
+    val co = Output(UInt(1.W)) //carry out
+    val s  = Output(UInt(1.W))  //sum
     })
 
 
   /* 
    * TODO: Instanciate the two half adders you want to use based on your HalfAdder class
    */
-
+   val halfAdderOne = Module(new HalfAdder)
+   val halfAdderTwo = Module(new HalfAdder)
 
   /* 
    * TODO: Describe output behaviour based on the input values and the internal signals
    */
-
+  halfAdderOne.io.a := io.a
+  halfAdderOne.io.b := io.b
+  halfAdderTwo.io.a := io.ci
+  halfAdderTwo.io.b := halfAdderOne.io.s
+  io.s := halfAdderTwo.io.s
+  io.co := halfAdderOne.io.c | halfAdderTwo.io.c
 }
 
 /** 
@@ -76,6 +93,10 @@ class FullAdder extends Module{
 class FourBitAdder extends Module{
 
   val io = IO(new Bundle {
+    val a = Input(UInt(4.W))
+    val b = Input(UInt(4.W))
+    val sum = Output(UInt(4.W))
+    val c = Output(UInt(1.W))
     /* 
      * TODO: Define IO ports of a 4-bit ripple-carry-adder as presented in the lecture
      */
@@ -84,9 +105,41 @@ class FourBitAdder extends Module{
   /* 
    * TODO: Instanciate the full adders and one half adderbased on the previously defined classes
    */
-
+   val halfAdder = Module(new HalfAdder)
+   val fA1 = Module(new FullAdder)
+   val fA2 = Module(new FullAdder)
+   val fA3 = Module(new FullAdder)
 
   /* 
    * TODO: Describe output behaviour based on the input values and the internal 
    */
+  halfAdder.io.a := io.a(0)
+  halfAdder.io.b := io.b(0)
+
+  fA1.io.a := io.a(1)
+  fA1.io.b := io.b(1)
+  fA1.io.ci := halfAdder.io.c
+
+  fA2.io.a := io.a(2)
+  fA2.io.b := io.b(2)
+  fA2.io.ci := fA1.io.co
+
+  fA3.io.a := io.a(3)
+  fA3.io.b := io.b(3)
+  fA3.io.ci := fA2.io.co
+
+  io.sum := Cat(
+    fA3.io.s,
+    fA2.io.s,
+    fA1.io.s,
+    halfAdder.io.s
+  )
+  /*
+  io.sum(0) := halfAdder.io.s
+  io.sum(1) := fA1.io.s
+  io.sum(2) := fA2.io.s
+  io.sum(3) := fA3.io.s
+
+   */
+  io.c := fA3.io.co
 }
