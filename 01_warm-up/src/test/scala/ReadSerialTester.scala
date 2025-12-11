@@ -54,14 +54,14 @@ class ReadSerialTester extends AnyFlatSpec with ChiselScalatestTester {
           val bit = (databyte >> j) & 1 //shift und lsb genommen aber 7 to 0 also msb to lsb
           dut.io.rxd.poke(bit.U)
           dut.io.reset_n.poke(0.U)
-          //dut.io.valid.expect(0.U)
+          dut.io.valid.expect(0.U)
           dut.clock.step(1)
 
         }
         dut.io.valid.expect(1.U)
         dut.io.data.expect(databyte.U)
-      //dut.io.valid.expect(1.U)
-      //dut.io.data.expect(databyte.U)
+      dut.io.valid.expect(1.U)
+      dut.io.data.expect(databyte.U)
       }
 
       //testcase reset in Übertragung
@@ -122,9 +122,22 @@ class ReadSerialTester extends AnyFlatSpec with ChiselScalatestTester {
           dut.io.valid.expect(0.U)
         }
       }
+      dut.io.rxd.poke(0.U)
+      dut.io.reset_n.poke(0.U)
+      dut.clock.step(1)
+        for (i<-0 to 6) {
+          dut.io.rxd.poke(1.U)
 
+      dut.io.reset_n.poke(0.U)
+      dut.clock.step(1)
+        }
+      dut.io.rxd.poke(1.U)
 
-
+      dut.io.reset_n.poke(1.U)
+      dut.clock.step(1)
+      dut.io.valid.expect(0.U)
+      dut.io.data.expect("b11111111".U)
+      dut.clock.step(10)
         /*dut.io.rxd.poke(...)
          *dut.clock.step(...)
          *dut.io.valid.expect(...)
