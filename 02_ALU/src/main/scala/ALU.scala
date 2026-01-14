@@ -26,7 +26,7 @@ class ALU extends Module {
     val aluResult = Output(UInt(32.W))
   })
 
-  io.aluResult := 0.U //Bei falschem ALU Input
+  io.aluResult := 0.U 
 
   switch(io.operation) {
     is(ALUOp.ADD) {

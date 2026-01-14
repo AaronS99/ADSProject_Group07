@@ -13,9 +13,23 @@ class alu_seq_item extends uvm_sequence_item;
 
     //ToDo: define the fields of the sequence item
 
+    rand logic [31:0] operandA;
+    rand logic [31:0] operandB;
+    rand ALUOp operation; //aus predefined
+         logic [31:0] aluResult;
+
     //ToDo: register the class with the factory
+    `uvm_object_utils_begin(alu_seq_item)
+    `uvm_field_int(operandA, UVM_ALL_ON)
+    `uvm_field_int(operandB, UVM_ALL_ON)
+    `uvm_field_enum(ALUOp, operation, UVM_ALL_ON)
+    `uvm_field_int(aluResult, UVM_ALL_ON)
+    `uvm_object_utils_end
 
     //ToDo: add constraint for operation field
+    constraint aluOp_constraint {
+        operation inside {ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU, PASSB};
+    }
 
     virtual function string convert2str();
         return $sformatf("operandA: 0x%0x, operandB: 0x%0x, operation: %0p, aluResult: 0x%0x", operandA, operandB, operation, aluResult);
