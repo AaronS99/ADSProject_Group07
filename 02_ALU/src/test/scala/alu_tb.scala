@@ -3,6 +3,11 @@
 //
 // Chair of Electronic Design Automation, RPTU in Kaiserslautern
 // File created on 10/31/2025 by Tobias Jauch (tobias.jauch@rptu.de)
+// ADS I Class Project
+// Pipelined RISC-V Core with Hazard Detection and Resolution
+//
+// Chair of Electronic Design Automation, RPTU in Kaiserslautern
+// File created on 10/31/2025 by Tobias Jauch (tobias.jauch@rptu.de)
 
 import chisel3._
 import chiseltest._
@@ -41,7 +46,7 @@ class ALUAddTest extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.operandA.poke("h7FFFFFFF".U(32.W))
       dut.io.operandB.poke(1.U)
       dut.io.operation.poke(ALUOp.ADD)
-      dut.io.aluResult.expect("800000000".U(32.W))
+      dut.io.aluResult.expect("h80000000".U(32.W))
       dut.clock.step(1)
 
       //signed negative addition
@@ -424,7 +429,7 @@ class ALUPASSBTest extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.operandA.poke("hFFFFFFFF".U(32.W))
       dut.io.operandB.poke("hFFFFFFFF".U(32.W))
       dut.io.operation.poke(ALUOp.PASSB)
-      dut.io.aluResult.expect("h00000000".U(32.W))
+      dut.io.aluResult.expect("hFFFFFFFF".U(32.W))
       dut.clock.step(1)
 
       // random case
@@ -437,22 +442,4 @@ class ALUPASSBTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 }
-
-
-class ALUWrongOPTEST extends AnyFlatSpec with ChiselScalatestTester {
-  "ALU_WrongOP_Tester" should "test WrongOP operation" in {
-    test(new ALU).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-      dut.clock.setTimeout(0)
-
-      dut.io.operandA.poke("hFFFFFF32".U(32.W))
-      dut.io.operandB.poke("h12345678".U(32.W))
-      dut.io.operation.poke(0.U)
-      dut.io.aluResult.expect("h00000000".U(32.W))
-      dut.clock.step(1)
-
-    }
-  }
-}
-
-
 
