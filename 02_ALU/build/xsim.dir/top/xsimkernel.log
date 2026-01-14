@@ -1,0 +1,7 @@
+Running: xsim.dir/top/xsimk -wdb alu_dump.wdb -runall -simmode gui -testplusarg UVM_TESTNAME=alu_test -testplusarg UVM_VERBOSITY=UVM_FULL -simrunnum 0 -socket 38477
+Design successfully loaded
+Design Loading Memory Usage: 208024 KB (Peak: 208024 KB)
+Design Loading CPU Usage: 1130 ms
+Simulation completed
+Simulation Memory Usage: 311532 KB (Peak: 347292 KB)
+Simulation CPU Usage: 1490 ms

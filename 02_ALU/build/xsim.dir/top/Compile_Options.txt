@@ -1,0 +1,1 @@
+"alu_tb" -relax -s "top" -timescale "1ns/1ps" -v "2" 
