@@ -20,10 +20,10 @@ class alu_seq_item extends uvm_sequence_item;
 
     //ToDo: register the class with the factory
     `uvm_object_utils_begin(alu_seq_item)
-    `uvm_field_int(operandA, UVM_ALL_ON)
-    `uvm_field_int(operandB, UVM_ALL_ON)
-    `uvm_field_enum(ALUOp, operation, UVM_ALL_ON)
-    `uvm_field_int(aluResult, UVM_ALL_ON)
+    `uvm_field_int(operandA, UVM_DEFAULT)
+    `uvm_field_int(operandB, UVM_DEFAULT)
+    `uvm_field_enum(ALUOp, operation, UVM_DEFAULT)
+    `uvm_field_int(aluResult, UVM_DEFAULT)
     `uvm_object_utils_end
 
     //ToDo: add constraint for operation field
