@@ -13,10 +13,9 @@ class alu_seq_item extends uvm_sequence_item;
 
     //ToDo: define the fields of the sequence item
 
-    rand logic [31:0] operandA;
-    rand logic [31:0] operandB;
-    rand ALUOp operation; //aus predefined
-         logic [31:0] aluResult;
+    rand bit [31:0] operandA, operandB;
+    rand ALUOp operation;
+    bit [31:0] aluResult;
 
     //ToDo: register the class with the factory
     `uvm_object_utils_begin(alu_seq_item)
