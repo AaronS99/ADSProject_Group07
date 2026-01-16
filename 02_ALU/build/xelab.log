@@ -998,7 +998,7 @@ release = 6.14.0-37-generic
 version = #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
 machine = x86_64
 ram (total) = 15848 MB
-ram (free) = 2856 MB
+ram (free) = 6212 MB
 
 -- Dumping Loaded Modules
 

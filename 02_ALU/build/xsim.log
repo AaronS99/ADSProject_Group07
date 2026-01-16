@@ -3,8 +3,8 @@
 # SW Build 6299465 on Fri Nov 14 12:34:56 MST 2025
 # IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
 # SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
-# Start of session at: Wed Jan 14 15:08:46 2026
-# Process ID         : 33563
+# Start of session at: Fri Jan 16 13:22:46 2026
+# Process ID         : 18085
 # Current directory  : /home/terra/Dokumente/ADS/ADSProject_Group07/02_ALU/build
 # Command line       : xsim -mode tcl -source {xsim.dir/top/xsim_script.tcl}
 # Log file           : /home/terra/Dokumente/ADS/ADSProject_Group07/02_ALU/build/xsim.log
@@ -13,13 +13,13 @@
 # Platform           : Ubuntu
 # Operating System   : Ubuntu 24.04.3 LTS
 # Processor Detail   : Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz
-# CPU Frequency      : 4289.986 MHz
+# CPU Frequency      : 4301.656 MHz
 # CPU Physical cores : 6
 # CPU Logical cores  : 12
 # Host memory        : 16619 MB
 # Swap memory        : 4294 MB
 # Total Virtual      : 20914 MB
-# Available Virtual  : 14643 MB
+# Available Virtual  : 15879 MB
 #-----------------------------------------------------------
 source xsim.dir/top/xsim_script.tcl
 # xsim {top} -testplusarg UVM_TESTNAME=alu_test -testplusarg UVM_VERBOSITY=UVM_FULL -wdb {alu_dump.wdb} -autoloadwcfg -runall
@@ -17123,5 +17123,5 @@ UVM_FATAL :    0
 
 $finish called at time : 9995 ns : File "/opt/VivadoFull/2025.2/Vivado/data/system_verilog/uvm_1.2/xlnx_uvm_package.sv" Line 18699
 exit
-INFO: xsimkernel Simulation Memory Usage: 311532 KB (Peak: 347292 KB), Simulation CPU Usage: 1630 ms
-INFO: [Common 17-206] Exiting xsim at Wed Jan 14 15:08:50 2026...
+INFO: xsimkernel Simulation Memory Usage: 311532 KB (Peak: 347292 KB), Simulation CPU Usage: 1550 ms
+INFO: [Common 17-206] Exiting xsim at Fri Jan 16 13:22:50 2026...

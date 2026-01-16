@@ -27,7 +27,11 @@ class ALU extends Module {
   })
 
   io.aluResult := 0.U 
+  when(!io.operation.isValid) {
+    io.aluResult := 999.U
+  }.otherwise {
 
+ 
   switch(io.operation) {
     is(ALUOp.ADD) {
       io.aluResult := io.operandA + io.operandB //a+b
@@ -63,6 +67,7 @@ class ALU extends Module {
       io.aluResult := io.operandB
     }
   }
+   }
 
   //ToDo: implement ALU functionality according to the task specification
 

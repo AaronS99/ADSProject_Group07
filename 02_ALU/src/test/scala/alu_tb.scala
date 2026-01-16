@@ -443,6 +443,50 @@ class ALUPASSBTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 }
 
+/*class ALUWrongOperandTest extends AnyFlatSpec with ChiselScalatestTester {
+  "ALU_WrongOperand_Tester" should "test WrongOperand" in {
+    test(new ALU).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    dut.clock.setTimeout(0)
+    
+      dut.io.operandA.poke("hFFFFFFFF".U(32.W))
+      dut.io.operandB.poke("h00000000".U(32.W))
+      dut.io.operation.asUInt.poke(11.U)
+      dut.io.aluResult.expect(999.U(32.W))
+      dut.clock.step(1)
+
+    
+    
+    }
+  }
+}*/
+class ALUWithInvalidOp extends Module {
+  val io = IO(new Bundle {
+    val operandA = Input(UInt(32.W))
+    val operandB = Input(UInt(32.W))
+    val invalidValue = Input(UInt(4.W))
+    val result = Output(UInt(32.W))
+  })
+  
+  val alu = Module(new ALU)
+  alu.io.operandA := io.operandA
+  alu.io.operandB := io.operandB
+  alu.io.operation := io.invalidValue.asTypeOf(ALUOp())
+  io.result := alu.io.aluResult
+}
+
+class ALUWrongOperandTest extends AnyFlatSpec with ChiselScalatestTester { //gibt Werte zu InvOp
+  "ALU_WrongOperand_Tester" should "test WrongOperand" in {
+    test(new ALUWithInvalidOp).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      dut.clock.setTimeout(0)
+      dut.io.operandA.poke("hFFFFFFFF".U(32.W))
+      dut.io.operandB.poke("h00000000".U(32.W))
+      dut.io.invalidValue.poke(15.U)
+      
+      dut.io.result.expect(999.U(32.W))
+      dut.clock.step(1)
+    }
+  }
+}
 
 
 /*
