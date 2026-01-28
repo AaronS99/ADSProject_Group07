@@ -104,7 +104,65 @@ class PipelinedRISCV32ITest extends AnyFlatSpec with ChiselScalatestTester {
       dut.clock.step(1)
       dut.io.result.expect(1.U)     // SLTU x13, x5, x4
       dut.io.exception.expect(false.B)
-      dut.clock.step(1)           
+      dut.clock.step(1)      
+
+      ///letzte noch nicht drin? fff
+      dut.io.result.expect("hFFFFFFFF".U)
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      //NEUE
+      dut.clock.step(3) //3 nops
+      //ADDI x1, x0, 1
+      dut.io.result.expect(1.U) 
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+      dut.clock.step(3) //nochmal 3 nops
+      //add x0,x1,x1 
+      dut.io.result.expect(2.U) //result 1+1
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+      dut.clock.step(3) 
+      //aber x0 immernoch 0
+      dut.io.result.expect(0.U)
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+      dut.clock.step(3)
+      // imm sign extension
+      dut.io.result.expect("hFFFFF800".U) //addi x5, x0, -2048
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect("h000007FF".U) //addi x6,x0,2047
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.clock.step(3)
+
+      dut.io.result.expect("hFFFFFFFF".U) //add x7,x5,x6 -> -1 
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.clock.step(3)
+
+      //shift 32
+      dut.io.result.expect(1.U) //addi x7,x0,1
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+      dut.io.result.expect(32.U) //addi x8,x0,32
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.clock.step(3)
+
+      dut.io.result.expect(1.U) //sll x9,x7,x8 shift 1 nicht um 32 sondern 0
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      //wrong instruction (div)
+      dut.clock.step(4)
+      dut.io.exception.expect(true.B)
+      dut.clock.step(1)
     }
   }
 }

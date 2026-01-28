@@ -28,3 +28,45 @@
 005236b3 // SLTU x13, x4, x5
 0042b6b3 // SLTU x13, x5, x4
 021141b3 // DIV x3, x2, x1 (NOT IMPLEMENTED!)
+
+
+
+
+//x0
+00000013
+00000013
+00000013
+00100093 //ADDI x1, x0, 1 x1 = 1
+00000013 //NOP (addi 0 0 0)
+00000013
+00000013
+00108013 // Add x0, x1, x1 x0=2, aber x0 darf nicht geändert werden
+00000013
+00000013
+00000013
+00000113 // ADDI x2, x0, 0 was x0? Muss 0
+00000013
+00000013
+00000013
+
+//Imm Sign extension
+80000293 //ADDI x5, x0, -2048
+7ff00313 //ADDI x6, x0, 2047
+00000013
+00000013
+00000013
+006283b3 //ADD x7, x5, x6  -> sollte 0xFFFFFFFF -1
+
+//rs mehr als 31 (mehr als 5 bit) (rs nur 4 bit)
+00000013
+00000013
+00000013
+00100393 //x7=1
+02000413 //x8=32
+00000013
+00000013
+00000013
+008394b3 //sll x9,x7,x8 //sollte 1<<0 -> 1
+
+//falsche Instruction
+021141b3 //div x3,x2,x1 -> exception true
