@@ -59,8 +59,78 @@ import uopc._
 class PipelinedRV32Icore (BinaryFile: String) extends Module {
   val io = IO(new Bundle {
     //ToDo: Add I/O ports
+    val check_res    = Output(UInt(32.W)) 
+    val exception = Output(Bool())
   })
 
 //ToDo: Add your implementation according to the specification above here 
 
+io.check_res := 0.U //default 0
+io.exception := false.B //default false
+
+    val ifStage = Module(new IF(BinaryFile))
+    val ifBarrier = Module(new IFBarrier)
+    ifBarrier.io.inInstr := ifStage.io.instr
+
+    val idStage = Module(new IDStage)
+    val idBarrier = Module(new IDBarrier)
+    val rf = Module(new regFile)
+
+    idStage.io.instr := ifBarrier.io.outInstr
+    rf.io.req_1.addr := idStage.io.regFileReq_A
+    idStage.io.regFileResp_A := rf.io.resp_1.data
+    rf.io.req_2.addr := idStage.io.regFileReq_B
+    idStage.io.regFileResp_B := rf.io.resp_2.data
+    idBarrier.io.inUOP := idStage.io.uop
+    idBarrier.io.inRD := idStage.io.rd
+    idBarrier.io.inOperandA := idStage.io.operandA
+    idBarrier.io.inOperandB := idStage.io.operandB
+    idBarrier.io.inXcptInvalid := idStage.io.XcptInvalid
+    idBarrier.io.inwr_en := idStage.io.wr_en
+
+    val exStage = Module(new EXStage)
+    val exBarrier = Module(new EXBarrier)
+    //ID -> EX
+    exStage.io.uop := idBarrier.io.outUOP
+    exStage.io.operandA := idBarrier.io.outOperandA
+    exStage.io.operandB := idBarrier.io.outOperandB
+    exStage.io.XcptInvalid := idBarrier.io.outXcptInvalid
+    exStage.io.wr_en := idBarrier.io.outwr_en
+    exStage.io.rd := idBarrier.io.outRD
+    //exs->exb
+    exBarrier.io.inAluResult := exStage.io.aluResult
+    exBarrier.io.inRD := exStage.io.outRD
+    exBarrier.io.inXcptInvalid := exStage.io.outXcptInvalid
+    exBarrier.io.inwr_en := exStage.io.outwr_en
+
+    val memStage = Module(new MEM)
+    val memBarrier = Module(new MEMBarrier)
+    //Mem Zeug überspringen?
+    memStage.io.aluResult := exBarrier.io.outAluResult
+    memStage.io.rd := exBarrier.io.outRD
+    memStage.io.XcptInvalid := exBarrier.io.outXcptInvalid
+    memStage.io.wr_en := exBarrier.io.outwr_en
+
+    memBarrier.io.inAluResult := memStage.io.outAluResult
+    memBarrier.io.inRD := memStage.io.outRD
+    memBarrier.io.inXcptInvalid := memStage.io.outXcptInvalid
+    memBarrier.io.inWr_en := memStage.io.outWr_en
+
+    val wbStage = Module(new WBStage)
+    val wbBarrier = Module(new WBBarrier)
+
+    wbStage.io.aluResult := memBarrier.io.outAluResult
+    wbStage.io.rd := memBarrier.io.outRD
+    wbStage.io.XcptInvalid := memBarrier.io.outXcptInvalid
+    wbStage.io.wr_en := memBarrier.io.outWr_en
+
+    wbBarrier.io.inCheckRes := wbStage.io.check_res
+    wbBarrier.io.inXcptInvalid := wbStage.io.XcptInvalid
+
+    rf.io.req_3.addr := wbStage.io.regFileReq.addr
+    rf.io.req_3.data := wbStage.io.regFileReq.data
+    rf.io.req_3.wr_en := wbStage.io.regFileReq.wr_en
+
+    io.check_res := wbBarrier.io.outCheckRes
+    io.exception := wbBarrier.io.outXcptInvalid
 }

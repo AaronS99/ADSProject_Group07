@@ -33,5 +33,32 @@ import chisel3._
 // -----------------------------------------
 // MEM-Barrier
 // -----------------------------------------
+class MEMBarrier extends Module {
+  val io = IO(new Bundle {
+    val inAluResult = Input(UInt(32.W))
+    val inRD = Input(UInt(5.W))
+    val inXcptInvalid = Input(Bool())
+    val inWr_en = Input(Bool())
 
+    val outAluResult = Output(UInt(32.W))
+    val outRD = Output(UInt(5.W))
+    val outXcptInvalid = Output(Bool())
+    val outWr_en = Output(Bool())
+  })
+
+  val aluResultR = RegInit(0.U(32.W))
+  val rdR = RegInit(0.U(5.W))
+  val xcptInvalidR = RegInit(false.B)
+  val wr_enR = RegInit(false.B)
+
+  aluResultR := io.inAluResult
+  rdR := io.inRD
+  xcptInvalidR := io.inXcptInvalid
+  wr_enR := io.inWr_en
+
+  io.outAluResult := aluResultR
+  io.outRD := rdR
+  io.outXcptInvalid := xcptInvalidR
+  io.outWr_en := wr_enR
+}
 //ToDo: Add your implementation according to the specification above here 

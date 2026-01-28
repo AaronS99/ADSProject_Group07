@@ -40,3 +40,47 @@ import uopc._
 // -----------------------------------------
 
 //ToDo: Add your implementation according to the specification above here 
+ class IDBarrier extends Module {
+    val io = IO(new Bundle {
+        val inUOP = Input(uopc.Type())
+        val inRD = Input(UInt(5.W))
+        val inOperandA = Input(UInt(32.W))
+        val inOperandB = Input(UInt(32.W))
+        val inXcptInvalid = Input(Bool())
+        val inwr_en = Input(Bool())
+
+        val outUOP = Output(uopc.Type())
+        val outRD = Output(UInt(5.W))
+        val outOperandA = Output(UInt(32.W))
+        val outOperandB = Output(UInt(32.W))
+        val outXcptInvalid = Output(Bool())
+        val outwr_en = Output(Bool())
+    })
+    /*
+        uop: micro-operation code (from uopc enum)
+    rd: destination register index, initialized to 0
+    operandA: first source operand, initialized to 0
+    operandB: second operand/immediate, initialized to 0
+    */
+
+    val uopR = RegInit(uopc.NOP)
+    val rdR = RegInit(0.U(5.W))
+    val operandAR = RegInit(0.U(32.W))
+    val operandBR = RegInit(0.U(32.W))
+    val xcptInvalidR = RegInit(false.B) //reg für letztes
+    val wr_enR = RegInit(false.B)
+
+    uopR := io.inUOP
+    rdR := io.inRD
+    operandAR := io.inOperandA
+    operandBR := io.inOperandB
+    xcptInvalidR := io.inXcptInvalid
+    wr_enR := io.inwr_en
+
+    io.outUOP := uopR
+    io.outRD := rdR
+    io.outOperandA := operandAR
+    io.outOperandB := operandBR
+    io.outXcptInvalid := xcptInvalidR 
+    io.outwr_en := wr_enR
+ }

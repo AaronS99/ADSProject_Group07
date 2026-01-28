@@ -26,8 +26,21 @@ import chisel3._
 
 class MEM extends Module {
   val io = IO(new Bundle {
+    val aluResult = Input(UInt(32.W))
+    val rd = Input(UInt(5.W))
+    val XcptInvalid = Input(Bool())
+    val wr_en = Input(Bool())
 
+    val outAluResult = Output(UInt(32.W))
+    val outRD = Output(UInt(5.W))
+    val outXcptInvalid = Output(Bool())
+    val outWr_en = Output(Bool())
   })
+
+  io.outAluResult := io.aluResult
+  io.outRD := io.rd
+  io.outXcptInvalid := io.XcptInvalid
+  io.outWr_en := io.wr_en 
 
   // No memory operations implemented in Assignment03, nothing to do here! :)
 

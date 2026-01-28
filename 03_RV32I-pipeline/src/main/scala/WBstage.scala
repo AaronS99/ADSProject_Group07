@@ -39,5 +39,28 @@ import chisel3._
 // -----------------------------------------
 // Writeback Stage
 // -----------------------------------------
+class WBStage extends Module {
+    val io = IO(new Bundle{
+        val aluResult = Input(UInt(32.W))
+        val rd = Input(UInt(5.W))
+        val XcptInvalid = Input(Bool())
+        val wr_en = Input(Bool())
 
+        val check_res = Output(UInt(32.W))
+
+        //regfileZeug
+        val regFileReq = Output(new regFileWriteReq)
+    })
+    
+    io.check_res := io.aluResult
+    io.regFileReq.addr := io.rd
+    io.regFileReq.data := io.aluResult
+    when(io.wr_en && !io.XcptInvalid) {
+        io.regFileReq.wr_en := true.B
+    }
+    .otherwise {
+        io.regFileReq.wr_en := false.B
+    }
+    
+}
 //ToDo: Add your implementation according to the specification above here 
