@@ -92,8 +92,10 @@ io.exception := false.B //default false
     val exBarrier = Module(new EXBarrier)
     //ID -> EX
     exStage.io.uop := idBarrier.io.outUOP
-    exStage.io.operandA := idBarrier.io.outOperandA
-    exStage.io.operandB := idBarrier.io.outOperandB
+
+    //exStage.io.operandA := idBarrier.io.outOperandA
+    //exStage.io.operandB := idBarrier.io.outOperandB
+
     exStage.io.XcptInvalid := idBarrier.io.outXcptInvalid
     exStage.io.wr_en := idBarrier.io.outwr_en
     exStage.io.rd := idBarrier.io.outRD
@@ -133,4 +135,66 @@ io.exception := false.B //default false
 
     io.check_res := wbBarrier.io.outCheckRes
     io.exception := wbBarrier.io.outXcptInvalid
+
+
+    //SA4
+    exStage.io.rs1 := idBarrier.io.outRS1
+    exStage.io.rs2 := idBarrier.io.outRS2
+
+    idBarrier.io.inRS1 := idStage.io.rs1
+    idBarrier.io.inRS2 := idStage.io.rs2
+
+    val fwd = Module(new ForwardingUnit)
+    fwd.io.id_ex_rs1 := idBarrier.io.outRS1
+    fwd.io.id_ex_rs2 := idBarrier.io.outRS2
+
+    fwd.io.ex_mem_rd := exBarrier.io.outRD
+    fwd.io.ex_mem_regWrite := exBarrier.io.outwr_en
+
+    fwd.io.mem_wb_rd := memBarrier.io.outRD
+    fwd.io.mem_wb_regWrite := memBarrier.io.outWr_en
+
+    val operandA = WireDefault(idBarrier.io.outOperandA)
+    val operandB = WireDefault(idBarrier.io.outOperandB)
+
+    switch(fwd.io.forwardA) {
+        is("b10".U) { operandA := exBarrier.io.outAluResult }
+        is("b01".U) { operandA := memBarrier.io.outAluResult }
+    }
+
+    switch(fwd.io.forwardB) {
+        is("b10".U) { operandB := exBarrier.io.outAluResult }
+        is("b01".U) { operandB := memBarrier.io.outAluResult }
+    }
+    exStage.io.operandA := operandA
+    when(idBarrier.io.outOpBisImm) { //bei immediate nicht forwarden
+        exStage.io.operandB := idBarrier.io.outOperandB
+    }.otherwise {
+        exStage.io.operandB := operandB
+    }
+
+
+    idBarrier.io.inPC := ifBarrier.io.outPC
+    idBarrier.io.inImm := idStage.io.imm
+    idBarrier.io.inOpBisImm := idStage.io.opBIsImm
+    idStage.io.pc := ifBarrier.io.outPC
+
+    ifStage.io.redirect := exStage.io.branchTaken
+    ifStage.io.redirectPC := exStage.io.branchTarget
+
+    ifBarrier.io.inPC := ifStage.io.pcOut
+    ifBarrier.io.flush := exStage.io.branchTaken
+
+    exStage.io.pc := idBarrier.io.outPC
+    exStage.io.imm := idBarrier.io.outImm
+
+    val doFlush = exStage.io.branchTaken
+
+
+    ifBarrier.io.flush := doFlush
+    idBarrier.io.flush := doFlush
+
+
+    //EA4
+
 }

@@ -31,5 +31,5 @@ import chisel3.experimental.ChiselEnum
 //ToDo: Add your implementation according to the specification above here 
 
 object uopc extends ChiselEnum {
-    val ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU, PASSB, NOP = Value
+    val ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU, PASSB, BEQ, BNE, BLT, BGE, BLTU, BGEU, JAL, JALR, NOP = Value
 }

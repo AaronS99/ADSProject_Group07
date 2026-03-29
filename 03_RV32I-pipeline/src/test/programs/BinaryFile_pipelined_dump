@@ -68,5 +68,33 @@
 00000013
 008394b3 //sll x9,x7,x8 //sollte 1<<0 -> 1
 
+//SA4 adds forwarding
+00400713
+00500793
+00f70833
+00f808b3
+01180933
+//EA4
+
+//branch und jump
+00100993 //addi x19, x0, 1
+00100a13 //addi x20, x0, 1
+01498163 //beq  x19, x20, 2 
+06300a93 //addi x21, x0, 99
+00700b13 //addi x22, x0, 7  TARGET
+00100b93 //addi x23, x0, 1
+00200c13 //addi x24, x0, 2
+018b9163 //bne  x23, x24, 2
+04d00c93 //addi x25, x0, 77
+00900d13  //addi x26, x0, 9 TARGET
+00200def //jal  x27, 2
+03700e13 //addi x28, x0, 55
+00b00e93 //addi x29, x0, 11 TARGET
+04c00f13 //addi x30, x0, 76
+000f0fe7 //jalr x31, x30, 0
+05800513 //addi x10, x0, 88 
+00d00593 //addi x11, x0, 13 TARGET
+
 //falsche Instruction
 021141b3 //div x3,x2,x1 -> exception true
+

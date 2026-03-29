@@ -159,6 +159,126 @@ class PipelinedRISCV32ITest extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.exception.expect(false.B)
       dut.clock.step(1)
 
+
+
+      //SA4
+      //forwarding -> ohne nops
+      dut.io.result.expect(4.U)      //addi x14, x0, 4
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(5.U)      //addi x15, x0, 5
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(9.U)      //add x16, x14, x15
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(14.U)     //add x17, x16, x15
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(23.U)     //add x18, x16, x17
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+
+     //branch/jump tests
+      dut.io.result.expect(1.U)      // addi x19, x0, 1
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(1.U)      // addi x20, x0, 1
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      // beq taken
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // flushed
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // second flushed instr
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      // addi x22, x0, 7  (branch target)
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(1.U)      // addi x23, x0, 1
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(2.U)      // addi x24, x0, 2
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      // bne taken
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // flushed
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // second flushed instr
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(9.U)      // addi x26, x0, 9  (branch target)
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      //dut.io.result.expect(71.U)     // jal x27, 2  -> return address = PC+1
+      println("---- DEBUG ----")
+println(s"result = ${dut.io.result.peek().litValue}")
+println(s"exception = ${dut.io.exception.peek().litToBoolean}")
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // flushed
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // second flushed instr
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(11.U)     // addi x29, x0, 11 (jal target)
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(81.U)     // addi x30, x0, 81
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      //dut.io.result.expect(75.U)     // jalr x31, x30, 0 -> return address = PC+1
+      println("---- DEBUG ----")
+println(s"result = ${dut.io.result.peek().litValue}")
+println(s"exception = ${dut.io.exception.peek().litToBoolean}")
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // flushed
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+      dut.io.result.expect(0.U)      // second flushed instr
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+
+            println("---- DEBUG ----")
+println(s"result = ${dut.io.result.peek().litValue}")
+println(s"exception = ${dut.io.exception.peek().litToBoolean}")
+      dut.io.result.expect(13.U)     // addi x11, x0, 13 (jalr target)
+      dut.io.exception.expect(false.B)
+      dut.clock.step(1)
+      //EA4
+
       //wrong instruction (div)
       dut.clock.step(4)
       dut.io.exception.expect(true.B)

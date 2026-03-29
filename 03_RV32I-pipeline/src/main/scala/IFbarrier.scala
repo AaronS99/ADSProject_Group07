@@ -33,11 +33,30 @@ class IFBarrier extends Module {
     //ToDo: Add I/O ports
     val inInstr = Input(UInt(32.W))
     val outInstr = Output(UInt(32.W))
+
+    //SA4
+    val inPC = Input(UInt(32.W))
+    val outPC = Output(UInt(32.W))
+
+    val flush = Input(Bool())
+    //EA4
   })
 
-  val instrReg = RegInit(0.U(32.W))
+    val instrReg = RegInit(0.U(32.W))
     instrReg := io.inInstr
     io.outInstr := instrReg
+
+    //SA4
+    val pcReg = RegInit(0.U(32.W))
+    pcReg := io.inPC
+    io.outPC := pcReg
+
+    when(io.flush) {
+        instrReg := "h00000013".U //nop addi x0, x0, 0
+        pcReg := 0.U
+    }
+
+
 //ToDo: Add your implementation according to the specification above here 
 
 }

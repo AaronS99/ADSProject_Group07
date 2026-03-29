@@ -63,6 +63,17 @@ class IDStage extends Module {
         val XcptInvalid = Output(Bool())
 
         val wr_en = Output(Bool())
+
+        //SA4
+        val rs1 = Output(UInt(5.W))
+        val rs2 = Output(UInt(5.W))
+
+        val pc = Input(UInt(32.W))
+        val outPC = Output(UInt(32.W))
+        val imm = Output(UInt(32.W))
+
+        val opBIsImm = Output(Bool())
+        //EA4
     })
 /*
     opcode: instruction format identifier
@@ -81,6 +92,24 @@ class IDStage extends Module {
     val rs2 = io.instr(24,20)
     val imm = Cat(Fill(20, io.instr(31)), io.instr(31,20))
 
+
+    //SA4
+    io.opBIsImm := false.B
+    io.rs1 := rs1
+    io.rs2 := rs2
+
+    io.outPC := io.pc
+    io.imm := 0.U
+
+    val immB = Cat(Fill(19, io.instr(31)), io.instr(31), io.instr(7), io.instr(30,25), io.instr(11,8), 0.U(1.W))
+    val immJ = Cat(Fill(11, io.instr(31)), io.instr(31), io.instr(19,12), io.instr(20), io.instr(30,21), 0.U(1.W))
+    
+    val isB = opcode === "b1100011".U
+    val isJAL = opcode === "b1101111".U
+    val isJALR = opcode === "b1100111".U
+    //EA4
+
+
     io.regFileReq_A := rs1
     io.regFileReq_B := rs2
 
@@ -97,6 +126,7 @@ class IDStage extends Module {
     when(isR) {
         io.wr_en := (rd =/= 0.U)
         io.operandB := io.regFileResp_B
+        io.opBIsImm := false.B
 
         switch(funct3) {
             is("b000".U) {
@@ -127,6 +157,7 @@ class IDStage extends Module {
     }.elsewhen(isI) {
         io.wr_en := (rd =/= 0.U)
         io.operandB := imm
+        io.opBIsImm := true.B
         //default
         io.uop := uopc.NOP
         io.XcptInvalid := false.B
@@ -157,6 +188,45 @@ class IDStage extends Module {
             }
 
 
+        }
+    }.elsewhen(isB) { //SA4
+        io.wr_en := false.B
+        io.operandB := io.regFileResp_B
+        io.opBIsImm := false.B
+        io.imm := immB
+        io.uop := uopc.NOP
+        io.XcptInvalid := false.B
+
+        switch(funct3) {
+            is("b000".U) {io.uop := uopc.BEQ}
+            is("b001".U) {io.uop := uopc.BNE}
+            is("b100".U) {io.uop := uopc.BLT}
+            is("b101".U) {io.uop := uopc.BGE}
+            is("b110".U) {io.uop := uopc.BLTU}
+            is("b111".U) {io.uop := uopc.BGEU}
+            is("b010".U) {
+                io.XcptInvalid := true.B
+                io.wr_en := false.B}
+            is("b011".U) {
+                io.XcptInvalid := true.B
+                io.wr_en := false.B}
+        }
+
+    }.elsewhen(isJAL) {
+        io.uop := uopc.JAL
+        io.wr_en := (rd =/= 0.U)
+        io.imm := immJ
+        io.opBIsImm := true.B
+    }.elsewhen(isJALR) {
+        when(funct3 === "b000".U) {
+            io.uop := uopc.JALR
+            io.wr_en := (rd =/= 0.U)
+            io.imm := imm
+            io.opBIsImm := true.B
+        }.otherwise {
+            io.uop := uopc.NOP
+            io.XcptInvalid := true.B
+            io.wr_en := false.B
         }
     }.otherwise {
                 io.uop := uopc.NOP
