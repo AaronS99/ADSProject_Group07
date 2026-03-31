@@ -55,6 +55,31 @@ import uopc._
         val outOperandB = Output(UInt(32.W))
         val outXcptInvalid = Output(Bool())
         val outwr_en = Output(Bool())
+
+        //SA4 
+        val inRS1 = Input(UInt(5.W))
+        val inRS2 = Input(UInt(5.W))
+        val outRS1 = Output(UInt(5.W))
+        val outRS2 = Output(UInt(5.W))
+
+
+        val inPC = Input(UInt(32.W))
+        val inImm = Input(UInt(32.W))
+
+        val outPC = Output(UInt(32.W))
+        val outImm = Output(UInt(32.W))
+
+        val flush = Input(Bool())
+
+        val inOpBisImm = Input(Bool())
+        val outOpBisImm = Output(Bool())
+
+        val inPredTaken = Input(Bool())
+        val outPredTaken = Output(Bool())
+        val inPredTarget = Input(UInt(32.W))
+        val outPredTarget = Output(UInt(32.W))
+    
+        //EA4
     })
     /*
         uop: micro-operation code (from uopc enum)
@@ -70,12 +95,64 @@ import uopc._
     val xcptInvalidR = RegInit(false.B) //reg für letztes
     val wr_enR = RegInit(false.B)
 
-    uopR := io.inUOP
-    rdR := io.inRD
-    operandAR := io.inOperandA
-    operandBR := io.inOperandB
-    xcptInvalidR := io.inXcptInvalid
-    wr_enR := io.inwr_en
+    //SA4
+    val rs1R = RegInit(0.U(5.W))
+    val rs2R = RegInit(0.U(5.W))
+
+
+
+    io.outRS1 := rs1R
+    io.outRS2 := rs2R
+
+    val pcR = RegInit(0.U(32.W))
+    val immR = RegInit(0.U(32.W))
+
+    val opBIsImmR = RegInit(false.B)
+
+    val predTakenReg = RegInit(false.B)
+    val predTargetReg = RegInit(0.U(32.W))
+
+    
+
+    io.outPC := pcR
+    io.outImm := immR
+    io.outOpBisImm := opBIsImmR
+
+    io.outPredTaken := predTakenReg
+    io.outPredTarget := predTargetReg
+
+    when(io.flush) {
+        uopR := uopc.NOP
+        rdR := 0.U
+        operandAR := 0.U
+        operandBR := 0.U
+        xcptInvalidR := false.B
+        wr_enR := false.B
+        rs1R := 0.U
+        rs2R := 0.U
+        pcR := 0.U
+        immR := 0.U
+        opBIsImmR := false.B
+        predTakenReg := false.B
+        predTargetReg := 0.U
+    }.otherwise {
+        uopR := io.inUOP
+        rdR := io.inRD
+        operandAR := io.inOperandA
+        operandBR := io.inOperandB
+        xcptInvalidR := io.inXcptInvalid
+        wr_enR := io.inwr_en
+        rs1R := io.inRS1
+        rs2R := io.inRS2
+        pcR := io.inPC
+        immR := io.inImm
+        opBIsImmR := io.inOpBisImm
+        predTakenReg := io.inPredTaken
+        predTargetReg := io.inPredTarget
+    }
+    //EA4
+
+
 
     io.outUOP := uopR
     io.outRD := rdR

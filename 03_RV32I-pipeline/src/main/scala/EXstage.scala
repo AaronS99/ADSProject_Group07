@@ -53,8 +53,25 @@ class EXStage extends Module {
         val outRD = Output(UInt(5.W))
         val outXcptInvalid = Output(Bool())
         val outwr_en = Output(Bool())
-    })
 
+        //SA4
+        val rs1 = Input(UInt(5.W))
+        val rs2 = Input(UInt(5.W))
+
+        val pc = Input(UInt(32.W))
+        val imm = Input(UInt(32.W))
+
+        val branchTaken = Output(Bool())
+        val branchTarget = Output(UInt(32.W))
+        //EA4
+    })
+    //SA4
+    //defaults
+    val alu = Module(new ALU)
+    val aluResultNext = WireDefault(alu.io.aluResult)
+    io.branchTaken := false.B
+    io.branchTarget := 0.U
+    //EA4
     io.aluResult := 0.U
     io.outRD := io.rd
     io.outXcptInvalid := io.XcptInvalid
@@ -75,13 +92,50 @@ class EXStage extends Module {
         is(uopc.SLTU) {aluOp := ALUOp.SLTU}
         is(uopc.PASSB) {aluOp := ALUOp.PASSB}
         is(uopc.NOP) {aluOp := ALUOp.PASSB}
+
+        is(uopc.BEQ) {
+            io.branchTaken := io.operandA === io.operandB
+            io.branchTarget := io.pc + io.imm
+        }
+        is(uopc.BNE) {
+            io.branchTaken := io.operandA =/= io.operandB
+            io.branchTarget := io.pc + io.imm
+        }
+        is(uopc.BLT) {
+            io.branchTaken := io.operandA.asSInt < io.operandB.asSInt
+            io.branchTarget := io.pc + io.imm
+        }
+        is(uopc.BGE) {
+            io.branchTaken := io.operandA.asSInt >= io.operandB.asSInt
+            io.branchTarget := io.pc + io.imm
+        }
+        is(uopc.BLTU) {
+            io.branchTaken := io.operandA < io.operandB
+            io.branchTarget := io.pc + io.imm
+        }
+        is(uopc.BGEU) {
+            io.branchTaken := io.operandA >= io.operandB
+            io.branchTarget := io.pc + io.imm
+        }
+        is(uopc.JAL) {
+            io.branchTaken := true.B
+            io.branchTarget := io.pc + io.imm
+            aluResultNext := io.pc + 1.U
+        }
+        is(uopc.JALR) {
+            io.branchTaken := true.B
+            io.branchTarget := io.operandA + io.imm
+            aluResultNext := io.pc + 1.U
+        }
     }
 
-    val alu = Module(new ALU)
+
+
+    
     alu.io.operandA := io.operandA
     alu.io.operandB := io.operandB
     alu.io.operation := aluOp
 
-    io.aluResult := alu.io.aluResult
+    io.aluResult := aluResultNext
 }
 //ToDo: Add your implementation according to the specification above here 

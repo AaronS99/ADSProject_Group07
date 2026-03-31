@@ -43,13 +43,33 @@ class IF (BinaryFile: String) extends Module {
   val io = IO(new Bundle {
     // ToDo: Add I/O ports
     val instr = Output(UInt(32.W))
+
+    //SA$
+    val redirect = Input(Bool())
+    val redirectPC = Input(UInt(32.W))
+
+    val pcOut = Output(UInt(32.W))
+
+    val predictedTaken = Input(Bool())
+    val predictedTarget = Input(UInt(32.W))
   })
 
   val IMem = Mem(4096, UInt(32.W))
   loadMemoryFromFile(IMem, BinaryFile)
   val PC = RegInit(0.U(32.W))
-  PC := PC + 1.U
+  io.pcOut := PC
   io.instr := IMem(PC)
+  //SA$
+  when(io.redirect) {
+    PC := io.redirectPC
+  }.elsewhen(io.predictedTaken){
+    PC := io.predictedTarget
+  }.otherwise {
+    PC := PC + 1.U
+  }
+  //EA4
+
+  //PC := PC + 1.U
 
 //ToDo: Add your implementation according to the specification above here 
   
