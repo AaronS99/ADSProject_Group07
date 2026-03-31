@@ -73,6 +73,12 @@ import uopc._
 
         val inOpBisImm = Input(Bool())
         val outOpBisImm = Output(Bool())
+
+        val inPredTaken = Input(Bool())
+        val outPredTaken = Output(Bool())
+        val inPredTarget = Input(UInt(32.W))
+        val outPredTarget = Output(UInt(32.W))
+    
         //EA4
     })
     /*
@@ -103,11 +109,17 @@ import uopc._
 
     val opBIsImmR = RegInit(false.B)
 
+    val predTakenReg = RegInit(false.B)
+    val predTargetReg = RegInit(0.U(32.W))
+
     
 
     io.outPC := pcR
     io.outImm := immR
     io.outOpBisImm := opBIsImmR
+
+    io.outPredTaken := predTakenReg
+    io.outPredTarget := predTargetReg
 
     when(io.flush) {
         uopR := uopc.NOP
@@ -121,6 +133,8 @@ import uopc._
         pcR := 0.U
         immR := 0.U
         opBIsImmR := false.B
+        predTakenReg := false.B
+        predTargetReg := 0.U
     }.otherwise {
         uopR := io.inUOP
         rdR := io.inRD
@@ -133,6 +147,8 @@ import uopc._
         pcR := io.inPC
         immR := io.inImm
         opBIsImmR := io.inOpBisImm
+        predTakenReg := io.inPredTaken
+        predTargetReg := io.inPredTarget
     }
     //EA4
 

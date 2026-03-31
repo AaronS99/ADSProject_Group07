@@ -68,33 +68,91 @@
 00000013
 008394b3 //sll x9,x7,x8 //sollte 1<<0 -> 1
 
-//SA4 adds forwarding
-00400713
-00500793
-00f70833
-00f808b3
-01180933
-//EA4
+00400713  // addi x14, x0, 4         x14 = 4 
+00500793  // addi x15, x0, 5         x15 = 5
+00f70833  // add  x16, x14, x15      x16 = 9 (Forwarding-Test Start)
+00f808b3  // add  x17, x16, x15      x17 = 14 (RAW Hazard)
+01180933  // add  x18, x16, x17      x18 = 23 (Forwarding)
 
-//branch und jump
-00100993 //addi x19, x0, 1
-00100a13 //addi x20, x0, 1
-01498163 //beq  x19, x20, 2 
-06300a93 //addi x21, x0, 99
-00700b13 //addi x22, x0, 7  TARGET
-00100b93 //addi x23, x0, 1
-00200c13 //addi x24, x0, 2
-018b9163 //bne  x23, x24, 2
-04d00c93 //addi x25, x0, 77
-00900d13  //addi x26, x0, 9 TARGET
-00200def //jal  x27, 2
-03700e13 //addi x28, x0, 55
-00b00e93 //addi x29, x0, 11 TARGET
-04c00f13 //addi x30, x0, 76
-000f0fe7 //jalr x31, x30, 0
-05800513 //addi x10, x0, 88 
-00d00593 //addi x11, x0, 13 TARGET
+00100993  // addi x19, x0, 1         x19 = 1
+00100a13  // addi x20, x0, 1         x20 = 1
+01498163  // beq  x19, x20, +2       equal -> branch taken (Flush-Test)
+06300a93  // addi x21, x0, 99        wrong path (flush)
+00700b13  // addi x22, x0, 7         branch target
 
-//falsche Instruction
-021141b3 //div x3,x2,x1 -> exception true
+fff00b93  // addi x23, x0, -1        x23 = -1 (signed edge)
+00100c13  // addi x24, x0, 1         x24 = 1
+018bc163  // blt  x23, x24, +2       -1 < 1  -> taken
+04d00c93  // addi x25, x0, 77        wrong path (flush)
+00900d13  // addi x26, x0, 9         branch target
+
+00500c93  // addi x25, x0, 5         x25 = 5
+00500d13  // addi x26, x0, 5         x26 = 5
+01acd163  // bge  x25, x26, +2       equal -> taken
+04200d93  // addi x27, x0, 66        wrong path
+00b00e13  // addi x28, x0, 11        branch target
+
+fff00d93  // addi x27, x0, -1        x27 = -1
+00100e13  // addi x28, x0, 1         x28 = 1
+01cde163  // bltu x27, x28, +2       unsigned: FALSE
+00d00e93  // addi x29, x0, 13        executed (kein branch)
+05e00f13  // addi x30, x0, 94        x30 = 94 (jalr target vorbereiten)
+
+01cdf163  // bgeu x27, x28, +2       unsigned: TRUE
+02c00293  // addi x5,  x0, 44        wrong path
+00f00313  // addi x6,  x0, 15        branch target
+
+002003ef  // jal  x7, +2             jump, speichert return addr
+03700413  // addi x8,  x0, 55        wrong path
+01000493  // addi x9,  x0, 16        target
+
+01100593  // addi x11, x0, 17        wird später nochmal gebraucht
+000f0fe7  // jalr x31, x30, 0        jump zu PC=94 (indirekter Sprung)
+05800513  // addi x10, x0, 88        wrong path
+01100593  // addi x11, x0, 17        jalr target (final expected)
+
+07b00d93  // addi x27, x0, 123       MARKER START (BTB-Test)
+07c00e13  // addi x28, x0, 124       MARKER 2
+
+00000993  // addi x19, x0, 0         Loop 1 init
+00300a13  // addi x20, x0, 3         Loop limit
+00198993  // addi x19, x19, 1        counter++
+00000013  // nop
+ff49cfe3  // blt  x19, x20, -2       loop (BTB training)
+00700a93  // addi x21, x0, 7         exit value
+
+00000993  // addi x19, x0, 0         Loop 2
+00300a13  // addi x20, x0, 3
+00198993  // addi x19, x19, 1
+00000013  // nop
+ff49cfe3  // blt ...
+00800a93  // addi x21, x0, 8         exit value
+
+00000993  // Loop 3
+00300a13
+00198993
+00000013
+ff49cfe3
+00900a93  // addi x21, x0, 9
+
+00000993  // Loop 4
+00300a13
+00198993
+00000013
+ff49cfe3
+00a00a93  // addi x21, x0, 10
+
+00000993  // Loop 5
+00300a13
+00198993
+00000013
+ff49cfe3
+00b00a93  // addi x21, x0, 11
+
+00000013  // nop
+00000013  // nop
+00000013  // nop
+00000013  // nop
+
+021141b3  // div x3, x2, x1 (illegal -> exception)
 

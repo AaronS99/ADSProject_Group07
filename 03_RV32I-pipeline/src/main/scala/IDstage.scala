@@ -73,6 +73,12 @@ class IDStage extends Module {
         val imm = Output(UInt(32.W))
 
         val opBIsImm = Output(Bool())
+
+        val inPredTaken = Input(Bool())
+        val outPredTaken = Output(Bool())
+
+        val inPredTarget = Input(UInt(32.W))
+        val outPredTarget = Output(UInt(32.W))
         //EA4
     })
 /*
@@ -94,12 +100,17 @@ class IDStage extends Module {
 
 
     //SA4
+
+
     io.opBIsImm := false.B
     io.rs1 := rs1
     io.rs2 := rs2
 
     io.outPC := io.pc
     io.imm := 0.U
+
+    io.outPredTaken := io.inPredTaken
+    io.outPredTarget := io.inPredTarget
 
     val immB = Cat(Fill(19, io.instr(31)), io.instr(31), io.instr(7), io.instr(30,25), io.instr(11,8), 0.U(1.W))
     val immJ = Cat(Fill(11, io.instr(31)), io.instr(31), io.instr(19,12), io.instr(20), io.instr(30,21), 0.U(1.W))

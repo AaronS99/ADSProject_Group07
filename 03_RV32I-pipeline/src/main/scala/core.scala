@@ -61,6 +61,8 @@ class PipelinedRV32Icore (BinaryFile: String) extends Module {
     //ToDo: Add I/O ports
     val check_res    = Output(UInt(32.W)) 
     val exception = Output(Bool())
+    val perf_totalBranches = Output(UInt(32.W))
+    val perf_correctPred   = Output(UInt(32.W))
   })
 
 //ToDo: Add your implementation according to the specification above here 
@@ -68,9 +70,36 @@ class PipelinedRV32Icore (BinaryFile: String) extends Module {
 io.check_res := 0.U //default 0
 io.exception := false.B //default false
 
+val useBTB = false
+
+val totalBranches = RegInit(0.U(32.W))
+val correctPred   = RegInit(0.U(32.W))
+
+val redirect = WireDefault(false.B)
+val redirectPC = WireDefault(0.U(32.W))
+
+val selectedPredTaken = WireDefault(false.B)
+val selectedPredTarget = WireDefault(0.U(32.W))
+
     val ifStage = Module(new IF(BinaryFile))
     val ifBarrier = Module(new IFBarrier)
     ifBarrier.io.inInstr := ifStage.io.instr
+
+    val btb = Module(new BTB)
+    btb.io.PC := ifStage.io.pcOut
+    btb.io.update := false.B
+    btb.io.updatePC := 0.U
+    btb.io.updateTarget := 0.U
+    btb.io.mispredicted := false.B
+
+    if(useBTB) {
+        selectedPredTaken := btb.io.valid && btb.io.predictTaken
+        selectedPredTarget := btb.io.target
+    } else {
+        selectedPredTaken := false.B
+        selectedPredTarget := 0.U
+    }
+    
 
     val idStage = Module(new IDStage)
     val idBarrier = Module(new IDBarrier)
@@ -174,25 +203,76 @@ io.exception := false.B //default false
     }
 
 
-    idBarrier.io.inPC := ifBarrier.io.outPC
+    val exIsCondBranch = idBarrier.io.outUOP.isOneOf(uopc.BEQ, uopc.BNE, uopc.BLT, uopc.BGE, uopc.BLTU, uopc.BGEU)
+
+
+
+    val exIsJump = idBarrier.io.outUOP.isOneOf(uopc.JAL, uopc.JALR)
+    val actualTaken = exStage.io.branchTaken
+    val actualTarget = exStage.io.branchTarget
+    val predTakenInEx = idBarrier.io.outPredTaken
+    val predTargetInEx = idBarrier.io.outPredTarget
+    val branchMispredict = exIsCondBranch && ((predTakenInEx =/= actualTaken) || (predTakenInEx && actualTaken && (predTargetInEx =/= actualTarget)))
+    val jumpRedirect = exIsJump && actualTaken
+    val correctNextPC = Mux(
+        exIsCondBranch, Mux(actualTaken, actualTarget, idBarrier.io.outPC + 1.U), actualTarget
+    )
+    when(useBTB.B) {
+        when(branchMispredict || jumpRedirect) {
+            redirect := true.B
+            redirectPC := correctNextPC
+        }
+        }.otherwise {
+        when(exStage.io.branchTaken) {
+            redirect := true.B
+            redirectPC := exStage.io.branchTarget
+        }
+    }
+    btb.io.update := useBTB.B && exIsCondBranch
+    btb.io.updatePC := idBarrier.io.outPC
+    btb.io.updateTarget := actualTarget
+    btb.io.mispredicted := actualTaken
+
+    idBarrier.io.inPC := idStage.io.outPC
     idBarrier.io.inImm := idStage.io.imm
     idBarrier.io.inOpBisImm := idStage.io.opBIsImm
     idStage.io.pc := ifBarrier.io.outPC
+    idStage.io.inPredTaken := ifBarrier.io.outPredTaken
+    idStage.io.inPredTarget := ifBarrier.io.outPredTarget
+    idBarrier.io.inPredTaken := idStage.io.outPredTaken
+    idBarrier.io.inPredTarget := idStage.io.outPredTarget
 
-    ifStage.io.redirect := exStage.io.branchTaken
-    ifStage.io.redirectPC := exStage.io.branchTarget
+    //ifStage.io.redirect := exStage.io.branchTaken
+    //ifStage.io.redirectPC := exStage.io.branchTarget
 
     ifBarrier.io.inPC := ifStage.io.pcOut
-    ifBarrier.io.flush := exStage.io.branchTaken
+    //ifBarrier.io.flush := exStage.io.branchTaken
 
     exStage.io.pc := idBarrier.io.outPC
     exStage.io.imm := idBarrier.io.outImm
 
-    val doFlush = exStage.io.branchTaken
+    //val doFlush = exStage.io.branchTaken
+    //ifBarrier.io.flush := doFlush
+    //idBarrier.io.flush := doFlush
+    ifBarrier.io.flush := redirect
+    idBarrier.io.flush := redirect
+
+    ifStage.io.redirect := redirect
+    ifStage.io.redirectPC := redirectPC
+    ifStage.io.predictedTaken := selectedPredTaken
+    ifStage.io.predictedTarget := selectedPredTarget
+    ifBarrier.io.inPredTaken := selectedPredTaken
+    ifBarrier.io.inPredTarget := selectedPredTarget
 
 
-    ifBarrier.io.flush := doFlush
-    idBarrier.io.flush := doFlush
+        when(exIsCondBranch) {
+        totalBranches := totalBranches + 1.U
+        when(!branchMispredict) {
+            correctPred := correctPred + 1.U
+        }
+    }
+    io.perf_totalBranches := totalBranches
+    io.perf_correctPred   := correctPred
 
 
     //EA4
